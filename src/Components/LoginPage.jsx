@@ -1,19 +1,34 @@
 import minilistLight from "./../assets/Login Page/hash-lightMode.svg";
 import minilistDark from "./../assets/Login Page/hash-darkMode.svg";
-import darkModeIcon from "./../assets/Themes/darkMode.svg";
-import lightModeIcon from "./../assets/Themes/lightMode.svg";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import DarkModeContext from "../DarkModeContext";
-
-const LoginPage = () => {
+import DatabaseContext from "../DatabaseContext";
+import { CheckForUserInDatabase } from "../utils/CheckForUserInDatabase";
+import gsap from "gsap";
+// eslint-disable-next-line react/prop-types
+const LoginPage = ({ darkModeIcon, lightModeIcon }) => {
   const [isDarkMode, setDarkMode] = useContext(DarkModeContext);
-
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const database = useContext(DatabaseContext);
   const handleSubmit = (e) => {
     e.preventDefault();
+    CheckForUserInDatabase(username, password, database);
   };
 
   const handleTheme = () => {
-    setDarkMode(!isDarkMode);
+    gsap.to(document.body, {
+      opacity: 0,
+      duration: 0.2,
+      onComplete: () => {
+        setDarkMode(!isDarkMode);
+
+        gsap.to(document.body, {
+          opacity: 1,
+          duration: 0.2,
+        });
+      },
+    });
   };
 
   return (
@@ -44,17 +59,25 @@ const LoginPage = () => {
           <img
             onClick={handleTheme}
             src={isDarkMode ? lightModeIcon : darkModeIcon}
-            className="theme-img w-12 cursor-pointer"
+            className="theme-img w-12 cursor-pointer "
             alt="theme"
           />
         </div>
         <input
           type="text"
           required
+          value={username}
+          onChange={(e) => {
+            setUsername(e.target.value);
+          }}
           className={`username outline-none focus:border-blue-600 border-2 p-4 w-10/12 md:w-7/12 mt-5 border-gray-700 rounded-lg`}
           placeholder="Enter Username"
         />
         <input
+          value={password}
+          onChange={(e) => {
+            setPassword(e.target.value);
+          }}
           type="password"
           required
           className={`username outline-none focus:border-blue-600 border-2 p-4 w-10/12 md:w-7/12 mt-2 border-gray-700 rounded-lg`}
@@ -62,9 +85,11 @@ const LoginPage = () => {
         />
         <button
           className={`login-btn px-5 py-4 mt-3 text-white w-10/12 md:w-7/12 rounded-xl bg-blue-600 text-center font-bold`}
+          type="submit"
         >
           Login
         </button>
+
         <p
           className={`${
             isDarkMode ? "text-white" : "text-black"
